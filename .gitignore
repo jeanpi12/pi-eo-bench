@@ -1,0 +1,10 @@
+# Raw captures and data: too large for git
+camera-data/
+*.dng
+
+# Python environment and cache files
+venv/
+__pycache__/
+
+# C++ build output (for later)
+build/
