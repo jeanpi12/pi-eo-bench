@@ -1,7 +1,15 @@
+import sys
 import rawpy
 import numpy as np
 
-with rawpy.imread("camera-data/first.dng") as raw:
+if len(sys.argv) != 2:
+    print("usage: python3 analysis/inspect_dng.py <file.dng>", file=sys.stderr)
+    sys.exit(1)
+
+path = sys.argv[1]
+print("file:", path)
+
+with rawpy.imread(path) as raw:
     data = raw.raw_image_visible.copy()
     pattern = raw.raw_pattern
     colors = raw.color_desc
@@ -17,5 +25,8 @@ positions = {"top-left": (0, 0), "top-right": (0, 1),
 
 for name, (r, c) in positions.items():
     ch = data[r::2, c::2]
+    zeros = np.count_nonzero(ch == 0)
+    saturated = np.count_nonzero(ch == white)
     print(f"{name:13} min={ch.min():5} max={ch.max():5} "
-          f"mean={ch.mean():7.1f} std={ch.std():6.1f}")
+          f"mean={ch.mean():7.1f} std={ch.std():6.1f} "
+          f"zeros={zeros} saturated={saturated}")
