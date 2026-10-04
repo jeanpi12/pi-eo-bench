@@ -38,3 +38,43 @@
 ## 2026-10-03 — Burst capture
 - 20 dark frames, dark_01 to dark_20, same settings as above
 - Stored in camera-data/darks/ (not in git)
+
+## 2026-10-03 — 20-frame classification (classify_pixels.py)
+- Master dark built from dark_01 to dark_20, saved as
+  camera-data/master_dark.npy (not in git)
+- Results identical on rerun (reproducible)
+
+### Noise
+- Temporal noise per pixel: median 0.553 DN, mean 0.606 DN
+  (mean > median: a minority of noisy pixels pulls the mean up)
+- Master dark: median 15.30 DN, robust spread 0.890 DN, plain std 1.140 DN
+- Per-frame means (~14.85) below master median (15.30): distribution
+  skewed low by pixels that occasionally dip far down
+
+### Defects
+- Dead (0 in all 20 frames): 0. Revises earlier candidates
+  (131, 1492) and (1935, 893): not zero in every frame.
+- Hot (master > median + 10 x robust spread = 24.2 DN): 14 pixels,
+  master 24.6 to 42.5 DN. 13 of 14 also flicker, likely shot noise
+  from their extra dark current, not RTN.
+- Adjacent hot pair: (392, 1791) and (393, 1791). Matters for defect
+  correction (a bad pixel's neighbor can't be used to fix it).
+- Flickering (spread > 10 x temporal = 5.5 DN): 94,875 pixels (~1.9%)
+
+### Flickering pixels
+- First test sampled only row 0 (sampling bias). Fixed with a seeded
+  random sample (seed 0).
+- Random sample: main cluster plus scattered excursions in both
+  directions; only some pixels look like two-level RTN.
+  RTN hypothesis weakened; cause undetermined with 20 frames.
+- Edges not special: row 0: 40, last row: 51, median 49 per row.
+  Earlier edge-clustering observation not supported.
+- Columns 160 (77), 1964 (75), 336 (70) about 2x expected
+  (~37 per column; expected max by chance ~58).
+  Hypothesis: noisy column readout circuitry.
+- Row 391 (81) slightly high, next to hot pair at rows 392-393.
+
+### Design implication
+- ~2% of pixels randomly jump 5+ DN; dark subtraction can't remove this.
+- A threshold set from typical noise would give false detections every
+  frame. Supports a smoothing (convolution) stage before thresholding.
